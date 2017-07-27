@@ -1,124 +1,73 @@
 package ripego
 
-type apnic struct {
-}
-
-func ApnicCheck(search string) (w WhoisInfo, err error) {
-	whoisData, err := getTcpContent(search, apnic_whois_server)
+func ApnicCheck(search, whoisServer string) (*WhoisInfo, error) {
+	whoisData, err := getTcpContent(search, whoisServer)
 
 	if err != nil {
-		return w, err
+		return nil, err
 	}
 
-	wi := WhoisInfo{}
-	wi.Inetnum = parseRPSLValue(whoisData, "inetnum", "inetnum")
-	wi.Netname = parseRPSLValue(whoisData, "inetnum", "netname")
-	wi.AdminC = parseRPSLValue(whoisData, "inetnum", "admin-c")
-	wi.Country = parseRPSLValue(whoisData, "inetnum", "country")
-	wi.Descr = parseRPSLValue(whoisData, "inetnum", "descr")
-	wi.LastModified = parseRPSLValue(whoisData, "inetnum", "changed")
-	wi.MntBy = parseRPSLValue(whoisData, "inetnum", "mnt-by")
-	wi.MntLower = parseRPSLValue(whoisData, "inetnum", "mnt-lower")
-	wi.MntRoutes = parseRPSLValue(whoisData, "inetnum", "mnt-routes")
-	wi.Source = parseRPSLValue(whoisData, "inetnum", "source")
-	wi.TechC = parseRPSLValue(whoisData, "inetnum", "tech-c")
-	wi.Organization = parseRPSLValue(whoisData, "irt", "irt")
+	wi := WhoisInfo{
+		Inetnum:      parseRPSLValue(whoisData, "inetnum", "inetnum"),
+		Netname:      parseRPSLValue(whoisData, "inetnum", "netname"),
+		AdminC:       parseRPSLValue(whoisData, "inetnum", "admin-c"),
+		Country:      parseRPSLValue(whoisData, "inetnum", "country"),
+		Descr:        parseRPSLValue(whoisData, "inetnum", "descr"),
+		LastModified: parseRPSLValue(whoisData, "inetnum", "changed"),
+		MntBy:        parseRPSLValue(whoisData, "inetnum", "mnt-by"),
+		MntLower:     parseRPSLValue(whoisData, "inetnum", "mnt-lower"),
+		MntRoutes:    parseRPSLValue(whoisData, "inetnum", "mnt-routes"),
+		Source:       parseRPSLValue(whoisData, "inetnum", "source"),
+		TechC:        parseRPSLValue(whoisData, "inetnum", "tech-c"),
+		Organization: parseRPSLValue(whoisData, "irt", "irt"),
 
-	p := WhoisPerson{}
-	p.Name = parseRPSLValue(whoisData, "role", "role")
-	p.AbuseMailbox = parseRPSLValue(whoisData, "irt", "abuse-mailbox")
-	p.Address = parseRPSLValue(whoisData, "role", "address")
-	p.LastModified = parseRPSLValue(whoisData, "role", "changed")
-	p.MntBy = parseRPSLValue(whoisData, "role", "mnt-by")
-	p.NicHdl = parseRPSLValue(whoisData, "role", "nic-hdl")
-	p.Phone = parseRPSLValue(whoisData, "role", "phone")
-	p.Source = parseRPSLValue(whoisData, "role", "source")
+		Person: WhoisPerson{
+			Name:         parseRPSLValue(whoisData, "role", "role"),
+			AbuseMailbox: parseRPSLValue(whoisData, "irt", "abuse-mailbox"),
+			Address:      parseRPSLValue(whoisData, "role", "address"),
+			LastModified: parseRPSLValue(whoisData, "role", "changed"),
+			MntBy:        parseRPSLValue(whoisData, "role", "mnt-by"),
+			NicHdl:       parseRPSLValue(whoisData, "role", "nic-hdl"),
+			Phone:        parseRPSLValue(whoisData, "role", "phone"),
+			Source:       parseRPSLValue(whoisData, "role", "source"),
+		},
+	}
 
-	wi.Person = p
-
-	return wi, err
+	return &wi, err
 }
 
-func ApnicCheck6(search string) (w WhoisInfo, err error) {
-	whoisData, err := getTcpContent(search, apnic_whois_server)
+func ApnicCheck6(search, whoisServer string) (*WhoisInfo, error) {
+	whoisData, err := getTcpContent(search, whoisServer)
 
 	if err != nil {
-		return w, err
+		return nil, err
 	}
 
-	wi := WhoisInfo{}
-	wi.Inetnum = parseRPSLValue(whoisData, "inet6num", "inet6num")
-	wi.Netname = parseRPSLValue(whoisData, "inet6num", "netname")
-	wi.AdminC = parseRPSLValue(whoisData, "inet6num", "admin-c")
-	wi.Country = parseRPSLValue(whoisData, "inet6num", "country")
-	wi.Descr = parseRPSLValue(whoisData, "inet6num", "descr")
-	wi.LastModified = parseRPSLValue(whoisData, "inet6num", "changed")
-	wi.MntBy = parseRPSLValue(whoisData, "inet6num", "mnt-by")
-	wi.MntLower = parseRPSLValue(whoisData, "inet6num", "mnt-lower")
-	wi.MntRoutes = parseRPSLValue(whoisData, "inet6num", "mnt-routes")
-	wi.Source = parseRPSLValue(whoisData, "inet6num", "source")
-	wi.TechC = parseRPSLValue(whoisData, "inet6num", "tech-c")
-	wi.Organization = parseRPSLValue(whoisData, "irt", "irt")
+	wi := WhoisInfo{
+		Inetnum:      parseRPSLValue(whoisData, "inet6num", "inet6num"),
+		Netname:      parseRPSLValue(whoisData, "inet6num", "netname"),
+		AdminC:       parseRPSLValue(whoisData, "inet6num", "admin-c"),
+		Country:      parseRPSLValue(whoisData, "inet6num", "country"),
+		Descr:        parseRPSLValue(whoisData, "inet6num", "descr"),
+		LastModified: parseRPSLValue(whoisData, "inet6num", "changed"),
+		MntBy:        parseRPSLValue(whoisData, "inet6num", "mnt-by"),
+		MntLower:     parseRPSLValue(whoisData, "inet6num", "mnt-lower"),
+		MntRoutes:    parseRPSLValue(whoisData, "inet6num", "mnt-routes"),
+		Source:       parseRPSLValue(whoisData, "inet6num", "source"),
+		TechC:        parseRPSLValue(whoisData, "inet6num", "tech-c"),
+		Organization: parseRPSLValue(whoisData, "irt", "irt"),
 
-	p := WhoisPerson{}
-	p.Name = parseRPSLValue(whoisData, "role", "role")
-	p.AbuseMailbox = parseRPSLValue(whoisData, "irt", "abuse-mailbox")
-	p.Address = parseRPSLValue(whoisData, "role", "address")
-	p.LastModified = parseRPSLValue(whoisData, "role", "changed")
-	p.MntBy = parseRPSLValue(whoisData, "role", "mnt-by")
-	p.NicHdl = parseRPSLValue(whoisData, "role", "nic-hdl")
-	p.Phone = parseRPSLValue(whoisData, "role", "phone")
-	p.Source = parseRPSLValue(whoisData, "role", "source")
-
-	wi.Person = p
-
-	return wi, err
-}
-
-func (r apnic) Check(search string) (w WhoisInfo, err error) {
-	whoisData, err := getTcpContent(search, apnic_whois_server)
-
-	if err != nil {
-		return w, err
+		Person: WhoisPerson{
+			Name:         parseRPSLValue(whoisData, "role", "role"),
+			AbuseMailbox: parseRPSLValue(whoisData, "irt", "abuse-mailbox"),
+			Address:      parseRPSLValue(whoisData, "role", "address"),
+			LastModified: parseRPSLValue(whoisData, "role", "changed"),
+			MntBy:        parseRPSLValue(whoisData, "role", "mnt-by"),
+			NicHdl:       parseRPSLValue(whoisData, "role", "nic-hdl"),
+			Phone:        parseRPSLValue(whoisData, "role", "phone"),
+			Source:       parseRPSLValue(whoisData, "role", "source"),
+		},
 	}
 
-	wi := WhoisInfo{}
-	wi.Inetnum = parseRPSLValue(whoisData, "inetnum", "inetnum")
-	wi.Netname = parseRPSLValue(whoisData, "inetnum", "netname")
-	wi.AdminC = parseRPSLValue(whoisData, "inetnum", "admin-c")
-	wi.Country = parseRPSLValue(whoisData, "inetnum", "country")
-	wi.Descr = parseRPSLValue(whoisData, "inetnum", "descr")
-	wi.LastModified = parseRPSLValue(whoisData, "inetnum", "changed")
-	wi.MntBy = parseRPSLValue(whoisData, "inetnum", "mnt-by")
-	wi.MntLower = parseRPSLValue(whoisData, "inetnum", "mnt-lower")
-	wi.MntRoutes = parseRPSLValue(whoisData, "inetnum", "mnt-routes")
-	wi.Source = parseRPSLValue(whoisData, "inetnum", "source")
-	wi.TechC = parseRPSLValue(whoisData, "inetnum", "tech-c")
-	wi.Organization = parseRPSLValue(whoisData, "irt", "irt")
-
-	p := WhoisPerson{}
-	p.Name = parseRPSLValue(whoisData, "role", "role")
-	p.AbuseMailbox = parseRPSLValue(whoisData, "irt", "abuse-mailbox")
-	p.Address = parseRPSLValue(whoisData, "role", "address")
-	p.LastModified = parseRPSLValue(whoisData, "role", "changed")
-	p.MntBy = parseRPSLValue(whoisData, "role", "mnt-by")
-	p.NicHdl = parseRPSLValue(whoisData, "role", "nic-hdl")
-	p.Phone = parseRPSLValue(whoisData, "role", "phone")
-	p.Source = parseRPSLValue(whoisData, "role", "source")
-
-	wi.Person = p
-
-	return wi, err
-}
-
-// hasIP function for derterming the right provider
-func (r apnic) hasIP(ipaddr string) bool {
-	//http://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.xhtml
-	ips := []string{"1", "14", "27", "36", "39", "42", "49", "49", "58", "59",
-		"60", "61", "101", "103", "106", "110", "111", "112", "113", "114",
-		"115", "116", "117", "118", "119", "120", "121", "122", "123", "124",
-		"125", "126", "133", "150", "153", "163", "171", "175", "180", "182", "183",
-		"202", "203", "210", "211", "218", "219", "220", "221", "222", "223"}
-
-	return isProviderIP(ipaddr, ips)
+	return &wi, err
 }

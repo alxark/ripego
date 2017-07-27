@@ -2,111 +2,73 @@ package ripego
 
 import (
 	"errors"
+	"net"
 )
 
-var getNic = make(map[string]Whois)
+//go:generate go run gen.go
 
-const (
-	afrinic_whois_server = "whois.afrinic.net"
-	apnic_whois_server = "whois.apnic.net"
-	arin_whois_server = "whois.arin.net"
-	lacnic_whois_server = "whois.lacnic.net"
-	ripe_whois_server = "whois.ripe.net"
-)
+type lookupFunc func(string, string) (*WhoisInfo, error)
+
+var lookupFunctions = map[string]lookupFunc{
+	"whois.afrinic.net4": AfrinicCheck,
+	"whois.apnic.net4":   ApnicCheck,
+	"whois.arin.net4":    ArinCheck,
+	"whois.lacnic.net4":  LacnicCheck,
+	"whois.ripe.net4":    RipeCheck4,
+
+	"whois.afrinic.net6": AfrinicCheck,
+	"whois.apnic.net6":   ApnicCheck6,
+	"whois.arin.net6":    ArinCheck,
+	"whois.lacnic.net6":  LacnicCheck,
+	"whois.ripe.net6":    RipeCheck6,
+}
 
 func init() {
-	getNic["afrinic"] = afrinic{}
-	getNic["apnic"] = apnic{}
-	getNic["arin"] = arin{}
-	getNic["lacnic"] = lacnic{}
-	getNic["ripe"] = ripe{}
+	initIPv6()
 }
 
 // IPLookup function that returns IP information at provider and returns information.
-func IPLookup(ipaddr string) (w WhoisInfo, err error) {
-	if !isValidIp(ipaddr) {
-		return w, errors.New("Invalid IPv4 address: " + ipaddr)
-	}
+func IPLookup(ipaddr string) (*WhoisInfo, error) {
+	var ipVersion string
+	var whoisServer string
+	ip := net.ParseIP(ipaddr)
 
-	w, err = getNicProvider(ipaddr).Check(ipaddr)
-	return w, err
-}
-
-// IPv4Lookup function that returns IP information at provider and returns information.
-func IPv4Lookup(ipaddr string) (w WhoisInfo, err error) {
-	if !isValidIp(ipaddr) {
-		return w, errors.New("Invalid IPv4 address: " + ipaddr)
-	}
-
-	resp, err := Query(ipaddr)
-	if err != nil {
-		return w, errors.New("Query failed for: " + ipaddr)
-	}
-
-	_, org, err := Server(resp)
-
-	if org == "afrinic" {
-		w, err = AfrinicCheck(ipaddr)
-	} else if org == "apnic" {
-		w, err = ApnicCheck(ipaddr)
-	} else if org == "arin" {
-		w, err = ArinCheck(ipaddr)
-	} else if org == "lacnic" {
-		w, err = LacnicCheck(ipaddr)
+	if ip4 := ip.To4(); ip4 != nil {
+		ipVersion = "4"
+		whoisServer = getIPv4Server(ip4)
+	} else if ip6 := ip.To16(); ip6 != nil {
+		ipVersion = "6"
+		whoisServer = getIPv6Server(ip6)
 	} else {
-		w, err = RipeCheck(ipaddr)
+		return nil, errors.New("Invalid IP address: " + ipaddr)
 	}
 
-	return w, err
+	if whoisServer == "" {
+		return nil, errors.New("unable to find WhoIs-Server for: " + ipaddr)
+	}
+
+	lf := lookupFunctions[whoisServer+ipVersion]
+	if lf == nil {
+		return nil, errors.New("Unable to find whois function for: " + whoisServer)
+	}
+
+	return lf(ipaddr, whoisServer)
 }
 
-// Search information about IPv6 IP address
-func IPv6Lookup(ipaddr string) (w WhoisInfo, err error) {
-	if !isValidIPv6(ipaddr) {
-		return w, errors.New("Invalid IPv6 address: " + ipaddr)
-	}
-
-	resp, err := Query(ipaddr)
-	if err != nil {
-		return w, errors.New("Query failed for: " + ipaddr)
-	}
-
-	_, org, err := Server(resp)
-
-	if org == "afrinic" {
-		w, err = AfrinicCheck(ipaddr)
-	} else if org == "apnic" {
-		w, err = ApnicCheck6(ipaddr)
-	} else if org == "arin" {
-		w, err = ArinCheck(ipaddr)
-	} else if org == "lacnic" {
-		w, err = LacnicCheck(ipaddr)
-	} else {
-		w, err = RipeCheck6(ipaddr)
-	}
-
-	return w, err
+// getIPv4Server returns the whois server fot the given IPv4 address
+func getIPv4Server(ip net.IP) string {
+	return ipv4prefixes[ip[0]]
 }
 
-// GetNicProvider function that search for the right provider for the lookup.
-func getNicProvider(ipaddr string) Whois {
-
-	var d = getNic["ripe"]
-
-	for w := range getNic {
-		if getNic[w].hasIP(ipaddr) {
-			d = getNic[w]
-			break
+// getIPv6Server returns the whois server fot the given IPv6 address
+func getIPv6Server(ip net.IP) string {
+	for i := range ipv6prefixes {
+		entry := &ipv6prefixes[i]
+		if entry.net.Contains(ip) {
+			return entry.whois
 		}
 	}
-
-	return d
-}
-
-// Whois intercate containing the resulting infomration.
-type Whois interface {
-	Check(search string) (WhoisInfo, error)
-	hasIP(ipaddr string) bool
+	return ""
 }
 
 // WhoisInfo struct with information on IP address range.

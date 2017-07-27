@@ -6,7 +6,7 @@ import (
 
 func TestRipeWhois(t *testing.T) {
 	// This is a megafon NAT IP, belongs to RIPE
-	w, err := RipeCheck("31.173.101.1")
+	w, err := RipeCheck4("31.173.101.1", "whois.ripe.net")
 	if err != nil {
 		t.Fatal("Failed to download RIPE data")
 	}

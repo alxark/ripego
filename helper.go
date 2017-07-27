@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-const (
-	rpsl_line_pattern = `(.+):\W+(.+)`
+var (
+	rpslLinePattern = regexp.MustCompile(`(.+):\W+(.+)`)
 )
 
 func getTcpContent(search string, host string) (s string, err error) {
@@ -63,43 +63,11 @@ func parseRPSLValue(whoisText string, class string, section string) string {
 
 func parseRPSLine(whoisLine string) string {
 
-	rx, _ := regexp.Compile(rpsl_line_pattern)
-	s := rx.FindAllStringSubmatch(whoisLine, -1)
+	s := rpslLinePattern.FindAllStringSubmatch(whoisLine, -1)
 
 	if len(s) >= 1 {
 		return s[0][2]
 	}
 
 	return ""
-}
-
-func isProviderIP(ipaddr string, ips []string) bool {
-
-	hasip := false
-	octet := firstOctec(ipaddr)
-
-	for i := range ips {
-		if octet == ips[i] {
-			hasip = true
-			break
-		}
-	}
-
-	return hasip
-}
-
-func firstOctec(ipaddr string) string {
-	return strings.Split(ipaddr, ".")[0]
-}
-
-func isValidIp(ipaddr string) bool {
-	ip := net.ParseIP(ipaddr)
-
-	return ip.To4() != nil
-}
-
-func isValidIPv6(ipaddr string) bool {
-	ip := net.ParseIP(ipaddr)
-
-	return ip.To16() != nil
 }
